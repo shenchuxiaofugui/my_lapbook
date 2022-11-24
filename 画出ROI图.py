@@ -25,8 +25,27 @@ def split_roi(roi_arr):
     for i in item:
         a = (roi_arr == i)
         arrs.append(a)
+    return arrs
 
 
+def show_all_label(img_array, roi_array, case, modal):
+    roi_index = [i for i, e in enumerate(np.sum(roi_array, axis=(1, 2)).tolist()) if e != 0]
+    length = len(roi_index)
+    if length > 6:
+        roi_index = roi_index[int(length/2)-3:int(length/2)+3]
+
+    #f = plt.subplots(figsize=(40, 40))
+    # roi_max_index = np.argmax(np.sum(roi_array, axis=(1, 2)))
+    for k in range(len(roi_index)):
+        plt.subplot(2, 3, k+1)
+
+        title = modal + str(roi_index[k])
+
+        show_img_label(img_array, roi_array, roi_index[k], title)
+
+    plt.savefig(savepath + f'/{case}_{title}.jpg', bbox_inches='tight', dpi=400)
+    # plt.show()
+    plt.close()
 
 
 def check_img_label(dir_path, savepath, modals):
@@ -45,43 +64,25 @@ def check_img_label(dir_path, savepath, modals):
                 continue
             try:
                 roi_img = sitk.ReadImage(candidate_roi)
-            except:
-                print(case.name, "read error")
-                continue
-            roi_array = sitk.GetArrayFromImage(roi_img) # [slice index, x ,y]
-            if np.sum(roi_array) == 0:
-                print(candidate_roi)
-
-        #roi_max_index = np.argmax(np.sum(roi_array, axis=(1,2)))
-            roi_index = [i for i, e in enumerate(np.sum(roi_array, axis=(1,2)).tolist()) if e != 0]
-        #print('ceng', roi_index)
-            length = len(roi_index)
-
-            try:
                 sub_img = sitk.ReadImage(candidate_img)
             except:
                 print(case.name, "read error")
                 continue
+            roi_array = sitk.GetArrayFromImage(roi_img) # [slice index, x ,y]
             img_array = sitk.GetArrayFromImage(sub_img)
 
+            if np.sum(roi_array) == 0:
+                print(candidate_roi)
+                continue
+            show_all_label(img_array, roi_array, case.name, modal)
 
-            if length > 6:
-                roi_index = roi_index[int(length/2)-3:int(length/2)+3]
 
-            #f = plt.subplots(figsize=(40, 40))
 
-            for k in range(len(roi_index)):
-                plt.subplot(2, 3, k+1)
+def check_nnunet(roi_path):
+    for
 
-                title = modal+str(roi_index[k])
-                try:
-                    show_img_label(img_array, roi_array, roi_index[k], title)
-                except:
-                    print(case.name, "huahuashibai")
 
-            plt.savefig(savepath + '/' + case.name +f'_{modal}.jpg', bbox_inches='tight', dpi=400)
-            # plt.show()
-            plt.close()
+
 
 
 
