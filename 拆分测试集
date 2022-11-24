@@ -1,0 +1,30 @@
+import pandas as pd
+from pathlib import Path
+import os
+
+modals = ['ADC', 't1', 't1_c', 't2']
+dirpath = r'C:\Users\Administrator\Desktop\ENT\CLAHE'
+batch_df = pd.read_csv(r'C:\Users\Administrator\Desktop\ENT' + '/equment.csv')
+pici = batch_df[batch_df['station'] == 'MRC40595']
+train_df = pici.sample(frac=0.7)
+pici = batch_df[batch_df['station'] == 'AWP166031']
+train_df = pd.concat([train_df, pici.sample(frac=0.7)])
+# for i in [1, 2, 4]:
+#     pici = batch_df[batch_df['batch'] == i]
+#     new_df = pici.sample(frac=0.7)
+#     train_df = pd.concat([train_df, new_df])
+#     print(len(train_df['CaseName']),len(pici['CaseName']))
+test_df = pd.concat([batch_df, train_df]).drop_duplicates(keep=False)
+for modal in modals:
+    df_path = os.path.join(dirpath, modal)
+    train_data = pd.read_csv(df_path + '/train.csv')
+    test_data = pd.read_csv(df_path + '/test.csv')
+    sum_df = pd.concat([train_data, test_data])
+    sum_df['CaseName'] = sum_df['CaseName'].astype(dtype='str')
+    new_train_data = pd.merge(sum_df, train_df['CaseName'])
+    new_test_data = pd.merge(sum_df, test_df['CaseName'])
+    if not os.path.exists(df_path + '/new/result'):
+        os.makedirs(df_path + '/new/result')
+    assert len(new_train_data) + len(new_test_data) == len(sum_df), "wrong"
+    new_train_data.to_csv(df_path + '/new/train.csv', index=False)
+    new_test_data.to_csv(df_path + '/new/test.csv', index=False)
